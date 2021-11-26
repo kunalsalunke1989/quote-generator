@@ -1,0 +1,72 @@
+const quoteContainer = document.getElementById("quote-container");
+const quoteText = document.getElementById("quote");
+const authorText = document.getElementById("author");
+const twitterBtn = document.getElementById("twitter");
+const newQuoteBtn = document.getElementById("new-quote");
+const loader = document.getElementById("loader");
+
+let apiQuotes = [];
+
+// Show loading
+function loading(){
+    loader.hidden = false;
+    quoteContainer.hidden = true;
+}
+
+// Hide loading
+function complete(){
+    loader.hidden = true;
+    quoteContainer.hidden = false;
+}
+
+//Show New Quote
+function newQuote(){
+    loading();
+    //Pick a random quote from apiQuotes array
+    const quote = apiQuotes[Math.floor(Math.random() * apiQuotes.length)];
+    //Check if Author is blank and replace it with Unknown
+    if(!quote.author)
+        authorText.textContent = "Unknown";
+    else
+        authorText.textContent = quote.author;
+    //Check Quote length to determine styling
+    if(quote.length > 120)
+        quoteText.classList.add("long-quote");
+    else
+        quoteText.classList.remove("long-quote");
+    // Set Quote, Hide Loader
+    quoteText.textContent = quote.text;
+    complete();
+    console.log(quote);
+}
+
+// Get Quotes From API
+async function getQuotes(){
+    loading();
+    const proxyUrl = 'https://agile-plateau-88059.herokuapp.com/';//Create a proxy server using Heroku to avoid CORS issues
+    const apiUrl = 'https://type.fit/api/quotes';
+    try{
+        const response = await fetch(proxyUrl + apiUrl);//Set response only when data is available.
+        apiQuotes = await response.json();
+        newQuote();
+        //console.log(apiQuotes);
+    } catch(error){
+        //Catch Error Here
+
+    }
+}
+
+//Tweet Quote
+function tweetQuote(){
+    const twitterUrl = `https://twitter.com/intent/tweet?text${quoteText.textContent} - ${authorText.textContent}`;
+    window.open(twitterUrl, '_blank');//Opens in a new tab
+}
+
+//Event Listeners
+newQuoteBtn.addEventListener("click", newQuote);
+twitterBtn.addEventListener("click", tweetQuote);
+
+//On Load
+getQuotes();
+
+//In order to use local quotes from quotes.js, simply call newQuote on load, replace apiQuotes with localQuotes and comment everything else out.
